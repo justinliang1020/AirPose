@@ -1,11 +1,10 @@
 # AirPose
  Computer vision based full body tracking for VR
+ 
+[![Airpose Demo Video](https://img.youtube.com/vi/b5pe5vCh3a8/0.jpg)](https://www.youtube.com/watch?v=b5pe5vCh3a8)
+
 
 Currrently in early development.
-
-FOR USERS: Alpha release available for download.
-
-FOR DEVELOPERS: Source code and build instructions still need to be edited (will finish in few weeks).
 
 # Install instructions
 
@@ -18,3 +17,9 @@ FOR DEVELOPERS: Source code and build instructions still need to be edited (will
 6. If your controllers don't show up, reassign trackers from hand to respective positions (waist, left foot, right foot) in SteamVR on your desktop from the "Manage Vive Trackers" settings tab. Restart SteamVR after you do this.
 
 Note: Airpose will only run if you run the Airpose App before starting SteamVR. Otherwise, it won't impact your VR gameplay.
+
+# Dev stuff
+
+I still need to do some dev stuff to make the driver files buildable.
+
+The OpenVR driver is built on [terminal29's openvr sample driver](https://github.com/terminal29/Simple-OpenVR-Driver-Tutorial)
