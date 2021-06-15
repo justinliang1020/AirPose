@@ -6,7 +6,7 @@
 
 # Install instructions
 
-[Install here](https://github.com/justinliang1020/AirPose/releases/tag/v0.1)
+[Install here](https://github.com/justinliang1020/AirPose/releases/download/v0.1/AirPose.7z)
 1. Download "airpose.7z" and unzip the file.
 2. Copy-paste the airpose folder into "C:\Program Files (x86)\Steam\steamapps\common\SteamVR\drivers"
 3. Make sure you have a webcam connected to your computer pointed at your playspace.
