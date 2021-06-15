@@ -4,8 +4,6 @@
 [![Airpose Demo Video](https://img.youtube.com/vi/b5pe5vCh3a8/0.jpg)](https://www.youtube.com/watch?v=b5pe5vCh3a8)
 
 
-Currrently in early development.
-
 # Install instructions
 
 [Install here](https://github.com/justinliang1020/AirPose/releases/tag/v0.1)
