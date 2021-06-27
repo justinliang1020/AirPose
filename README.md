@@ -27,6 +27,6 @@ Note: Airpose will only run if you run the Airpose App before starting SteamVR. 
 
 # Dev stuff
 
-I still need to do some dev stuff to make the driver files buildable.
+I still need to do some dev stuff with cmake to make the driver files buildable.
 
 The OpenVR driver is built on [terminal29's openvr sample driver](https://github.com/terminal29/Simple-OpenVR-Driver-Tutorial)
