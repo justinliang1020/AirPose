@@ -13,10 +13,11 @@
 4. Run Airpose App
 5. Start SteamVR
 6. If your controllers don't show up, reassign trackers from hand to respective positions (waist, left foot, right foot) in SteamVR on your desktop from the "Manage Vive Trackers" settings tab. Restart SteamVR after you do this.
+![Vive trackers settings](/trackers.png)
 
 Note: Airpose will only run if you run the Airpose App before starting SteamVR. Otherwise, it won't impact your VR gameplay.
 
-# User instructions
+# Calibration instructions
 
 1. Run airpose app
 2. Start SteamVR
