@@ -16,6 +16,14 @@
 
 Note: Airpose will only run if you run the Airpose App before starting SteamVR. Otherwise, it won't impact your VR gameplay.
 
+# User instructions
+
+1. Run airpose app
+2. Start SteamVR
+3. While SteamVR is starting up, face the camera and stay still
+4. Count for about 5 seconds after SteamVR starts up, and after that it should be calibrated
+5. If you need to recalibrate, hit the calibrate button and stand still for 5 seconds facing the camera
+
 # Dev stuff
 
 I still need to do some dev stuff to make the driver files buildable.
