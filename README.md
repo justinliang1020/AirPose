@@ -1,5 +1,6 @@
 # AirPose
- Computer vision based full body tracking for VR
+ Computer vision based full body tracking for VR.
+ Does XY-tracking quite well, Z-tracking (depth) is still experimental.
  
 [![Airpose Demo Video](https://img.youtube.com/vi/b5pe5vCh3a8/0.jpg)](https://www.youtube.com/watch?v=b5pe5vCh3a8)
 
