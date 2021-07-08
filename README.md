@@ -27,6 +27,10 @@ Note: Airpose will only run if you run the Airpose App before starting SteamVR. 
 4. Count for about 5 seconds after SteamVR starts up, and after that it should be calibrated
 5. If you need to recalibrate, hit the calibrate button and stand still for 5 seconds facing the camera
 
+# Tips
+
+1. Use a camera with a higher resolution for better tracking. I use my phone's camera by connecting it with Iriun Webcam.
+
 # Dev stuff
 
 I still need to do some dev stuff with cmake to make the driver files buildable.
