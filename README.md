@@ -2,7 +2,8 @@
  Computer vision based full body tracking for VR.
  Does XY-tracking quite well, Z-tracking (depth) is still experimental.
  
- Demo video:
+ [Demo video:](https://www.youtube.com/watch?v=b5pe5vCh3a8)
+ 
 [![Airpose Demo Video](https://img.youtube.com/vi/b5pe5vCh3a8/0.jpg)](https://www.youtube.com/watch?v=b5pe5vCh3a8)
 
 
