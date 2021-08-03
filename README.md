@@ -2,6 +2,7 @@
  Computer vision based full body tracking for VR.
  Does XY-tracking quite well, Z-tracking (depth) is still experimental.
  
+ Demo video:
 [![Airpose Demo Video](https://img.youtube.com/vi/b5pe5vCh3a8/0.jpg)](https://www.youtube.com/watch?v=b5pe5vCh3a8)
 
 
@@ -30,9 +31,8 @@ Note: Airpose will only run if you run the Airpose App before starting SteamVR. 
 # Tips
 
 1. Use a camera with a higher resolution for better tracking. I use my phone's camera by connecting it with Iriun Webcam.
+2. Having a background with low contrast to your body may decrease performance
 
 # Dev stuff
-
-I still need to do some dev stuff with cmake to make the driver files buildable.
 
 The OpenVR driver is built on [terminal29's openvr sample driver](https://github.com/terminal29/Simple-OpenVR-Driver-Tutorial)
