@@ -114,10 +114,6 @@ def video_stream():
         # the BGR image to RGB.
         image = flip(image, 1)
 
-        #rotate image
-        image=transpose(image)
-        image=flip(image,flipCode=0)
-
         # To improve performance, optionally mark the image as not writeable to
         # pass by reference.
         image.flags.writeable = False
@@ -153,8 +149,6 @@ def video_stream():
                 send += f'{landmark};{round(coord[0], 5)};{round(coord[1], 5)};{round(coord[2], 5)};'
 
             prev_landmarks = landmarks
-
-        #print(send)
                 
         if pipe_connected:
             if calibrating or initial_calibrating:
