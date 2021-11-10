@@ -97,72 +97,20 @@ def start_pipe(pipe):
     initial_calibrating = True
 
 def video_stream():
-    global calibrating
-    global initial_calibrating
-    global pipe_connected
-    global prev_time
-    global prev_landmarks
     try:    #try is attempt to cleanup app after steamvr disconnects
-        success, image = cap.read()
+        image = get_camera_image(cap)
+        results = pose.process(image)        
         
-        if not success:
-            print("Ignoring empty camera frame.")
-            # If loading a video, use 'break' instead of 'continue'.
-            video_label.after(1, video_stream)
-
-        # Flip the image horizontally for a later selfie-view display, and convert
-        # the BGR image to RGB.
-        image = flip(image, 1)
-
-        # To improve performance, optionally mark the image as not writeable to
-        # pass by reference.
-        image.flags.writeable = False
-        results = pose.process(image)
-
+        send = get_data(results)
+                
+        send_data_to_pipe(send)
+        
         # Draw the pose annotation on the image.
         image.flags.writeable = True
         mp_drawing.draw_landmarks(
             image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-
         image = cvtColor(image, COLOR_RGB2BGR)
-        
-        send = 'n'
 
-        if results.pose_landmarks:
-            landmarks = {}
-            for position in positions:
-                r = results.pose_landmarks.landmark[getattr(mp_pose.PoseLandmark, position)]
-                if not r or (r.visibility) < min_visibility:
-                    if position in prev_landmarks:
-                        landmarks[position] = prev_landmarks[position]
-                    else:
-                        landmarks[position] = (0, 0, 0) # only happens at very beginning if landmarks occluded
-                else:
-                    landmarks[position] = (r.x, r.y, r.z)
-            cur_time = time.time() - prev_time
-            
-
-            prev_time = time.time()
-
-            send = f'{round(cur_time, 5)};'
-            for landmark, coord in landmarks.items():
-                send += f'{landmark};{round(coord[0], 5)};{round(coord[1], 5)};{round(coord[2], 5)};'
-
-            prev_landmarks = landmarks
-                
-        if pipe_connected:
-            if calibrating or initial_calibrating:
-                send = 'c'
-                calibrating = False
-                initial_calibrating = False
-            some_data = str.encode(str(send), encoding="ascii") # about 150 chars for 4 positions, rounded 5 decimal points
-            # Send the encoded string to client
-            err, bytes_written = win32file.WriteFile(
-                pipe,
-                some_data,
-                pywintypes.OVERLAPPED()
-            )
-        
         # send image to tkinter app
         img = Image.fromarray(image)
         imgtk = ImageTk.PhotoImage(image=img)
@@ -175,6 +123,68 @@ def video_stream():
     except:
         root.quit()
         return
+
+def get_data(results):
+    global prev_landmarks
+    global prev_time
+
+    send = 'n'
+
+    if results.pose_landmarks:
+        landmarks = {}
+        for position in positions:
+            r = results.pose_landmarks.landmark[getattr(mp_pose.PoseLandmark, position)]
+            if not r or (r.visibility) < min_visibility:
+                if position in prev_landmarks:
+                    landmarks[position] = prev_landmarks[position]
+                else:
+                    landmarks[position] = (0, 0, 0) # only happens at very beginning if landmarks occluded
+            else:
+                landmarks[position] = (r.x, r.y, r.z)
+        
+        cur_time = time.time() - prev_time
+        prev_time = time.time()
+
+        send = f'{round(cur_time, 5)};'
+        for landmark, coord in landmarks.items():
+            send += f'{landmark};{round(coord[0], 5)};{round(coord[1], 5)};{round(coord[2], 5)};'
+
+        prev_landmarks = landmarks
+    return send
+
+def get_camera_image(cap: VideoCapture):
+    success, image = cap.read()
+        
+    if not success:
+        print("Ignoring empty camera frame.")
+            # If loading a video, use 'break' instead of 'continue'.
+        video_label.after(1, video_stream)
+
+        # Flip the image horizontally for a later selfie-view display, and convert
+        # the BGR image to RGB.
+    image = flip(image, 1)
+
+        # To improve performance, optionally mark the image as not writeable to
+        # pass by reference.
+    image.flags.writeable = False
+    return image
+
+def send_data_to_pipe(send: str):
+    global calibrating
+    global initial_calibrating
+
+    if pipe_connected:
+        if calibrating or initial_calibrating:
+            send = 'c'
+            calibrating = False
+            initial_calibrating = False
+        some_data = str.encode(str(send), encoding="ascii") # about 150 chars for 4 positions, rounded 5 decimal points
+            # Send the encoded string to client
+        err, bytes_written = win32file.WriteFile(
+                pipe,
+                some_data,
+                pywintypes.OVERLAPPED()
+            )
 
 
 if __name__ == '__main__':
