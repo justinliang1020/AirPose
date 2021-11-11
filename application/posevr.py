@@ -1,55 +1,19 @@
 # external modules
-from typing import Callable
-from cv2 import VideoCapture, flip, cvtColor, COLOR_RGB2BGR
+from cv2 import VideoCapture, cvtColor, COLOR_RGB2BGR
 import time
 import mediapipe as mp
 
-import os
-import sys
 from threading import Thread
-from tkinter import Tk, Frame, Label, Button #fix later
 from PIL import ImageTk, Image
+
+from camera import get_camera_image
+from ui import init_calibrate_button, init_tkinter_app, init_video_output
 from pipe import calibrate, close_pipe, create_pipe, send_data_to_pipe, start_pipe
 
 # setup webcam
 cap = VideoCapture(0)
 _, image = cap.read()
 image_height, image_width, _ = image.shape
-
-def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
-    try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
-
-    return os.path.join(base_path, relative_path)
-
-# tkinter app stuff
-def init_tkinter_app() -> Tk:
-    Logo = resource_path("favicon.ico")
-    root = Tk()
-    root.title('Airpose')
-    root.iconbitmap(Logo)
-    # Create a frame
-    app = Frame(root, bg="white")
-    app.grid()
-    return app
-
-def init_calibrate_button(app: Tk, command: Callable):
-    # Create calibration button
-    calibration_button = Button(root, text="Calibrate", command=command, width = 50, height = 5, bg = 'green')
-    calibration_button.grid(row=1,column=0)
-
-def init_video_output(app: Tk) -> Label:
-    # Create a label for video stream
-    video_label = Label(app)
-    video_label.grid(row=0,column=0,columnspan=1)
-    return video_label
-
-calibrating = False
-initial_calibrating = False
 
 # setup mediapipe
 mp_drawing = mp.solutions.drawing_utils
@@ -80,7 +44,7 @@ def video_stream_loop():
 def process_camera_image() -> Image:
     image = get_camera_image(cap)
     results = pose.process(image)        
-    data = get_data(results)
+    data = convert_to_pipe_data(results)
     send_data_to_pipe(data)
     update_video_output(image, results.pose_landmarks)
 
@@ -96,7 +60,7 @@ def update_video_output(image: Image, landmarks):
     video_label.imgtk = imgtk
     video_label.configure(image=imgtk)
 
-def get_data(results):
+def convert_to_pipe_data(results):
     global prev_landmarks
     global prev_time
 
@@ -123,18 +87,6 @@ def get_data(results):
 
         prev_landmarks = landmarks
     return send
-
-def get_camera_image(cap: VideoCapture) -> Image:
-    _, image = cap.read()
-
-    # Flip the image horizontally for a later selfie-view display, and convert
-    # the BGR image to RGB.
-    image = flip(image, 1)
-
-    # To improve performance, optionally mark the image as not writeable to
-    # pass by reference.
-    image.flags.writeable = False
-    return image
 
 if __name__ == '__main__':
     # starts pipe in seperate thread
