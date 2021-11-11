@@ -1,34 +1,20 @@
 # external modules
 from typing import Callable
-from cv2 import VideoCapture, VideoWriter, VideoWriter_fourcc, FONT_HERSHEY_SIMPLEX, flip, transpose, cvtColor, COLOR_RGB2BGR
+from cv2 import VideoCapture, flip, cvtColor, COLOR_RGB2BGR
 import time
 import mediapipe as mp
-import win32pipe
-import win32file
-import pywintypes
+
 import os
 import sys
 from threading import Thread
 from tkinter import Tk, Frame, Label, Button #fix later
 from PIL import ImageTk, Image
-
-# posevr modules
-import posevr_client
-
-# setup pipe
-PIPE_NAME = 'posevr_pipe'
-pipe_connected = False 
+from pipe import calibrate, close_pipe, create_pipe, send_data_to_pipe, start_pipe
 
 # setup webcam
 cap = VideoCapture(0)
 _, image = cap.read()
 image_height, image_width, _ = image.shape
-
-# function for calibration
-def calibrate():
-    if pipe_connected:
-        global calibrating
-        calibrating = True
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -39,8 +25,6 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
 
     return os.path.join(base_path, relative_path)
-
-
 
 # tkinter app stuff
 def init_tkinter_app() -> Tk:
@@ -81,23 +65,6 @@ MIN_VISIBILITY = 0.7
 prev_time = 0
 prev_landmarks = {}
 
-def start_pipe(pipe):
-    """Waits until pipe server connects to pipe client
-
-    Args:
-        pipe ([type]): [description]
-    """
-    global pipe_connected
-    global initial_calibrating
-    print('Waiting for client to connect...')
-    win32pipe.ConnectNamedPipe(pipe, None) 
-    print('Client is connected')
-    if posevr_client.pipe_ended:
-        return
-    pipe_connected = True
-    time.sleep(8) # wait for driver to get set up TODO: fix
-    initial_calibrating = True
-
 def video_stream_loop():
     global video_label
     global root
@@ -110,21 +77,20 @@ def video_stream_loop():
         root.quit()
         return
 
-def process_camera_image():
+def process_camera_image() -> Image:
     image = get_camera_image(cap)
     results = pose.process(image)        
-        
-    send = get_data(results)
-                
-    send_data_to_pipe(send)
-        
+    data = get_data(results)
+    send_data_to_pipe(data)
+    update_video_output(image, results.pose_landmarks)
+
+def update_video_output(image: Image, landmarks):
     # Draw the pose annotation on the image.
     image.flags.writeable = True
-    mp_drawing.draw_landmarks(
-            image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+    mp_drawing.draw_landmarks(image, landmarks, mp_pose.POSE_CONNECTIONS)
     image = cvtColor(image, COLOR_RGB2BGR)
 
-        # send image to tkinter app
+    # send image to tkinter app
     img = Image.fromarray(image)
     imgtk = ImageTk.PhotoImage(image=img)
     video_label.imgtk = imgtk
@@ -170,29 +136,9 @@ def get_camera_image(cap: VideoCapture) -> Image:
     image.flags.writeable = False
     return image
 
-def send_data_to_pipe(send: str):
-    global calibrating
-    global initial_calibrating
-
-    if pipe_connected:
-        if calibrating or initial_calibrating:
-            send = 'c'
-            calibrating = False
-            initial_calibrating = False
-        some_data = str.encode(str(send), encoding="ascii") # about 150 chars for 4 positions, rounded 5 decimal points
-            # Send the encoded string to client
-        win32file.WriteFile(
-            pipe,
-            some_data,
-            pywintypes.OVERLAPPED())
-
-
 if __name__ == '__main__':
     # starts pipe in seperate thread
-    pipe = win32pipe.CreateNamedPipe(f'\\\\.\\pipe\\{PIPE_NAME}', win32pipe.PIPE_ACCESS_DUPLEX | win32file.FILE_FLAG_OVERLAPPED,
-                                     win32pipe.PIPE_TYPE_MESSAGE | win32pipe.PIPE_READMODE_MESSAGE | win32pipe.PIPE_WAIT,
-                                     1, 65536, 65536, 0, None)
-    print(f'Pipe {PIPE_NAME} created.')
+    pipe = create_pipe()
     t1 = Thread(target=start_pipe, args=(pipe,))
     t1.start()
     
@@ -204,8 +150,6 @@ if __name__ == '__main__':
     root.after(0, video_stream_loop)
     root.mainloop()
 
-    # ends pipe server by connecting a dummy client pipe and closing
-    if not pipe_connected:
-        posevr_client.named_pipe_client()
+    close_pipe()
     
     cap.release()
