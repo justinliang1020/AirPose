@@ -6,14 +6,11 @@ import mediapipe as mp
 from threading import Thread
 from PIL import ImageTk, Image
 
-from camera import get_camera_image
+from camera import get_camera_image, close_camera, get_camera
 from ui import init_calibrate_button, init_tkinter_app, init_video_output
 from pipe import calibrate, close_pipe, create_pipe, send_data_to_pipe, start_pipe
 
-# setup webcam
-cap = VideoCapture(0)
-_, image = cap.read()
-image_height, image_width, _ = image.shape
+
 
 # setup mediapipe
 mp_drawing = mp.solutions.drawing_utils
@@ -42,6 +39,7 @@ def video_stream_loop():
         return
 
 def process_camera_image() -> Image:
+    cap = get_camera()
     image = get_camera_image(cap)
     results = pose.process(image)        
     data = convert_to_pipe_data(results)
@@ -97,11 +95,10 @@ if __name__ == '__main__':
     prev_time = time.time()
 
     root = init_tkinter_app()
-    init_calibrate_button(root, calibrate)
+    
     video_label = init_video_output(root)
     root.after(0, video_stream_loop)
     root.mainloop()
 
     close_pipe()
-    
-    cap.release()
+    close_camera()
