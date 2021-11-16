@@ -1,0 +1,61 @@
+name: release
+
+on: push
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    - uses: BSFishy/pip-action@v1
+      with:
+        requirements: application/requirements.txt
+    - run: pyinstaller application/main.spec --no-embed-manifest -D
+    - uses: actions/upload-artifact@v2.2.4
+      with:
+        path: ./dist/
+        retention-days: 7
+    - uses: actions/upload-artifact@v2.2.4
+      with:
+        name: manifest
+        path: ./build/main/main.exe.manifest
+        retention-days: 7
+
+
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ github.ref_type == 'tag' }}
+    steps:
+    - id: tag
+      uses: dawidd6/action-get-tag@v1
+      with:
+        strip_v: false
+    - uses: actions/download-artifact@v2
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: ${{steps.tag.outputs.tag}}
+        draft: false
+        prerelease: false
+    - uses: edgarrc/action-7z@v1
+      with:
+        args: 7z a -t7z -mx=9 AirPose.7z ./artifact/AirPose.exe
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./AirPose.7z
+        asset_name: AirPose-${{steps.tag.outputs.tag}}.7z
+        asset_content_type: application/zip
