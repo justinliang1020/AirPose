@@ -1,0 +1,5 @@
+mediapipe       == 0.8.9
+opencv-python   == 4.5.1.48
+Pillow          == 8.4.0
+pywin32
+pyinstaller     == 4.6
